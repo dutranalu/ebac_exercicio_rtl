@@ -1,38 +1,64 @@
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import styles from './PostComments.module.css';
 
-import Comment from '../../models/Comment';
-
-const Post = () => {
-    const [comments, setComments] = useState<Comment[]>([]);
-    const [tempComment, setTempComment] = useState('');
-
-    function handleAddComment(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const newComment = new Comment(comments.length, tempComment);
-        setTempComment('');
-        setComments([...comments, newComment]);
-    }
-
-    return (
-        <div>
-            <ul className={styles['post-comments']}>
-                {comments.map(({ comment, id }) => (
-                    <li className={styles['post-comment']} key={id}>
-                        <p className={styles['post-comment-content']}>
-                            {comment}
-                        </p>
-                    </li>
-                ))}
-            </ul>
-            <form onSubmit={handleAddComment} className={styles['post-comments-form']}>
-                <textarea value={tempComment} onChange={e => setTempComment(e.target.value)} required className={styles['post-comments-form-textarea']} />
-                <button type="submit" className={styles['post-comments-form-button']}>
-                    Comentar
-                </button>
-            </form>
-        </div>
-    );
+interface Comment {
+  id: number;
+  text: string;
 }
 
-export default Post;
+const PostComments = () => {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [tempComment, setTempComment] = useState('');
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!tempComment.trim()) return;
+
+    setComments(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        text: tempComment
+      }
+    ]);
+
+    setTempComment('');
+  };
+
+  return (
+    <div className={styles['post-comments']}>
+      <form
+        className={styles['post-comments-form']}
+        onSubmit={handleSubmit}
+      >
+        <textarea
+          data-testid="comment-input"
+          value={tempComment}
+          onChange={e => setTempComment(e.target.value)}
+          required
+          className={styles['post-comments-form-textarea']}
+        />
+
+        <button
+          data-testid="comment-button"
+          type="submit"
+          className={styles['post-comments-form-button']}
+        >
+          Comentar
+        </button>
+      </form>
+
+      <ul data-testid="comment-list">
+        {comments.map(comment => (
+          <li key={comment.id}>
+            <p data-testid="comment-text">{comment.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default PostComments;
+
